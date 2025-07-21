@@ -1,20 +1,18 @@
-# User Registration API
+# User Authentication API
 
-## Endpoint
-
-`POST /users/register`
+This API provides endpoints for user registration, login, profile retrieval, and logout. All endpoints return JSON responses.
 
 ---
 
-## Description
+## Endpoints
 
-Registers a new user. Returns a JWT token and the created user object on success.
+### 1. Register User
 
----
+**POST** `/users/register`
 
-## Request Body
+Registers a new user and returns a JWT token and user object.
 
-Send as JSON:
+#### Request Body
 
 ```json
 {
@@ -27,14 +25,9 @@ Send as JSON:
 }
 ```
 
----
+#### Responses
 
-## Responses
-
-### 201 Created
-
-- **Description:** User registered successfully.
-- **Body Example:**
+- **201 Created**
   ```json
   {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -48,40 +41,32 @@ Send as JSON:
     }
   }
   ```
-
-### 400 Bad Request
-
-- **Description:** Missing required fields.
-- **Body Example:**
+- **400 Bad Request**
   ```json
   {
-    "message": "All fields are required"
+    "errors": [
+      {
+        "msg": "Name is required",
+        "param": "fullname.firstname",
+        "location": "body"
+      }
+    ]
   }
   ```
-
-### 409 Conflict
-
-- **Description:** User already exists.
-- **Body Example:**
+- **409 Conflict**
   ```json
   {
     "message": "User already exists"
   }
   ```
-
-### 500 Internal Server Error
-
-- **Description:** Unexpected server error.
-- **Body Example:**
+- **500 Internal Server Error**
   ```json
   {
     "message": "Internal server error"
   }
   ```
 
----
-
-## Example Request
+#### Example Request
 
 ```bash
 curl -X POST http://localhost:4000/users/register \
@@ -95,38 +80,24 @@ curl -X POST http://localhost:4000/users/register \
 
 ---
 
-## Example Response (Successful Registration)
-
-````json
-{
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "_id": "62f3c0e3f1a3b15a46d7b0ea",
-    "fullname": {
-      "firstname": "John",
-      "lastname": "Doe"
-    },
-    "email": "john.doe@example.com"
-  }
-}
 ### 2. Login User
 
 **POST** `/users/login`
 
-Authenticates a user and returns a JWT token and user object on success.
+Authenticates a user and returns a JWT token and user object.
 
-#### **Request Body**
+#### Request Body
 
 ```json
 {
   "email": "string (valid email, required)",
   "password": "string (min 6 chars, required)"
 }
-````
+```
 
-#### **Responses**
+#### Responses
 
-- **201 Created**
+- **200 OK**
   ```json
   {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -165,7 +136,7 @@ Authenticates a user and returns a JWT token and user object on success.
   }
   ```
 
-#### **Example Request**
+#### Example Request
 
 ```bash
 curl -X POST http://localhost:4000/users/login \
@@ -178,12 +149,108 @@ curl -X POST http://localhost:4000/users/login \
 
 ---
 
+### 3. Get User Profile
+
+**GET** `/users/profile`
+
+Returns the authenticated user's profile.  
+**Authentication required:** Send JWT token in the `Authorization` header as `Bearer <token>` or as a cookie named `token`.
+
+#### Response
+
+- **200 OK**
+  ```json
+  {
+    "_id": "62f3c0e3f1a3b15a46d7b0ea",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com"
+  }
+  ```
+- **401 Unauthorized**
+  ```json
+  {
+    "message": "Unauthorized access"
+  }
+  ```
+- **401 Token Blacklisted**
+  ```json
+  {
+    "message": "Token is blacklisted"
+  }
+  ```
+- **404 Not Found**
+  ```json
+  {
+    "message": "User not found"
+  }
+  ```
+- **401 Invalid Token**
+  ```json
+  {
+    "message": "Invalid token"
+  }
+  ```
+
+#### Example Request
+
+```bash
+curl -X GET http://localhost:4000/users/profile \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+---
+
+### 4. Logout User
+
+**GET** `/users/logout`
+
+Logs out the authenticated user by blacklisting the JWT token and clearing the cookie.
+
+**Authentication required:** Send JWT token in the `Authorization` header as `Bearer <token>` or as a cookie named `token`.
+
+#### Response
+
+- **200 OK**
+  ```json
+  {
+    "message": "Logged out successfully"
+  }
+  ```
+- **401 Unauthorized**
+  ```json
+  {
+    "message": "Unauthorized access"
+  }
+  ```
+- **401 Token Blacklisted**
+  ```json
+  {
+    "message": "Token is blacklisted"
+  }
+  ```
+- **401 Invalid Token**
+  ```json
+  {
+    "message": "Invalid token"
+  }
+  ```
+
+#### Example Request
+
+```bash
+curl -X GET http://localhost:4000/users/logout \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+---
+
 ## Notes
 
 - All endpoints expect and return JSON.
-<!--
-This section notes that JWT tokens are necessary for accessing authenticated routes in the application. Ensure that clients include a valid JWT token in their requests to interact with protected endpoints. The specific implementation details for JWT authentication are not included in this snippet.
--->
-- JWT tokens are required for authenticated routes (not shown here).
+- JWT tokens are required for authenticated routes (`/users/profile`, `/users/logout`).
 - Validation errors are returned as an array in the `errors` field.
 - Passwords are securely hashed using bcrypt.
+- Blacklisted tokens cannot be used for authentication.
