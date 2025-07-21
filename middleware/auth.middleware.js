@@ -7,10 +7,10 @@ module.exports.authUser= async (req, res, next) => {
       if(!token) {
         return res.status(401).json({ message: 'Unauthorized access' });    
  } 
-     const blacklistToken = await BlacklistToken.find({ token });
-     if (blacklistToken) {;
+     const blacklisted = await BlacklistToken.findOne({ token });
+     if (blacklisted) {
         return res.status(401).json({ message: 'Token is blacklisted' });
-    }   
+    }
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify token
         const user = await userModel.findById(decoded.id) // Exclude password from response
