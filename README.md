@@ -1,10 +1,10 @@
-# User Authentication API
+# User & Captain Authentication API
 
-This API provides endpoints for user registration, login, profile retrieval, and logout. All endpoints return JSON responses.
+This API provides endpoints for user and captain registration, login, profile retrieval, and logout. All endpoints return JSON responses.
 
 ---
 
-## Endpoints
+## User Endpoints
 
 ### 1. Register User
 
@@ -247,10 +247,71 @@ curl -X GET http://localhost:4000/users/logout \
 
 ---
 
-## Notes
+## Captain Endpoints
 
-- All endpoints expect and return JSON.
-- JWT tokens are required for authenticated routes (`/users/profile`, `/users/logout`).
-- Validation errors are returned as an array in the `errors` field.
-- Passwords are securely hashed using bcrypt.
-- Blacklisted tokens cannot be used for authentication.
+### 1. Register Captain
+
+**POST** `/captains/register`
+
+Registers a new captain (driver) and returns a JWT token and captain object.
+
+#### Request Body
+
+```json
+{
+  "fullname": {
+    "firstname": "string (required)",
+    "lastname": "string (optional, min 3 chars)"
+  },
+  "email": "string (valid email, required)",
+  "password": "string (min 6 chars, required)",
+  "vehicle": {
+    "color": "string (required)",
+    "plate": "string (required)",
+    "vehicleType": "string (required)",
+    "capacity": "integer (min 1, required)"
+  }
+}
+```
+
+#### Responses
+
+- **201 Created**
+  ```json
+  {
+    "message": "Captain registered successfully",
+    "captain": {
+      "_id": "62f3c0e3f1a3b15a46d7b0ea",
+      "fullname": {
+        "firstname": "Jane",
+        "lastname": "Smith"
+      },
+      "email": "jane.smith@example.com",
+      "vehicle": {
+        "color": "Red",
+        "plate": "ABC123",
+        "vehicleType": "Sedan",
+        "capacity": 4
+      }
+      // ...other fields
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
+- **400 Bad Request**
+  ```json
+  {
+    "errors": [
+      {
+        "msg": "First name is required",
+        "param": "fullname.firstname",
+        "location": "body"
+      }
+    ]
+  }
+  ```
+- **409 Conflict**
+  ```json
+  {
+    "message": "Captain with this email already exists"
+  }

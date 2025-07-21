@@ -9,8 +9,12 @@ const BlacklistToken = require('../models/blacklistToken.models.js');
 module.exports.registeruser = async (req, res,next) => {
      const errors = validationResult(req);
      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });    
-}  
+        return res.status(400).json({ errors: errors.array() }); 
+        const isUserExist = await userModel.findOne({ email: req.body.email });
+        if (isUserExist) {
+            return res.status(400).json({ message: 'User with this email already exists' });
+        }    
+}     
 try {
   const {fullname, email, password} = req.body;
      const hashPassword= await bcrypt.hash(password, 10);

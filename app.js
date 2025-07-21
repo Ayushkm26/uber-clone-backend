@@ -1,4 +1,5 @@
 const express =require('express');
+const captainRoutes = require('./routes/captain.routes');
 const app = express();
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
@@ -12,7 +13,9 @@ connectDB(); // Connect to MongoDB
 app.use(cors({ origin: '*' }));
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true }));
-app.use("/users",userRoutes) // Parse URL-encoded bodies
+app.use("/users",userRoutes) 
+app.use('/captains', captainRoutes); // Use captain routes
+// Parse URL-encoded bodies
  app.get('/', (req, res) => {
   res.send('Hello World!');
 }); 
