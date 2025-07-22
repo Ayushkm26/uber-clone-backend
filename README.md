@@ -315,3 +315,206 @@ Registers a new captain (driver) and returns a JWT token and captain object.
   {
     "message": "Captain with this email already exists"
   }
+  ---
+
+### 2. Login Captain
+
+**POST** `/captains/login`
+
+Authenticates a captain and returns a JWT token and captain object.
+
+#### Request Body
+
+```json
+{
+  "email": "string",      // required, valid email
+  "password": "string"    // required, min 6 chars
+}
+```
+
+#### Example Request
+
+```bash
+curl -X POST http://localhost:4000/captains/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "jane.smith@example.com",
+    "password": "password123"
+  }'
+```
+
+#### Responses
+
+- **200 OK**
+  ```json
+  {
+    "message": "Login successful",
+    "captain": {
+      "_id": "62f3c0e3f1a3b15a46d7b0ea",
+      "fullname": {
+        "firstname": "Jane",
+        "lastname": "Smith"
+      },
+      "email": "jane.smith@example.com",
+      "vehicle": {
+        "color": "Red",
+        "plate": "ABC123",
+        "vehicleType": "Sedan",
+        "capacity": 4
+      }
+      // ...other fields
+    },
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  }
+  ```
+
+- **400 Bad Request**
+  ```json
+  {
+    "errors": [
+      {
+        "msg": "Please provide a valid email address",
+        "param": "email",
+        "location": "body"
+      }
+    ]
+  }
+  ```
+
+- **404 Not Found**
+  ```json
+  {
+    "message": "Captain not found"
+  }
+  ```
+
+- **401 Unauthorized**
+  ```json
+  {
+    "message": "Invalid credentials"
+  }
+  ```
+
+- **403 Forbidden**
+  ```json
+  {
+    "message": "Captain is blocked"
+  }
+  ```
+
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Internal server error"
+  }
+  ```
+
+---
+
+### 3. Get Captain Profile
+
+**GET** `/captains/profile`
+
+Returns the authenticated captain's profile.  
+**Authentication required:** Send JWT token in the `Authorization` header as `Bearer <token>` or as a cookie named `token`.
+
+#### Example Request
+
+```bash
+curl -X GET http://localhost:4000/captains/profile \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Responses
+
+- **200 OK**
+  ```json
+  {
+    "captain": {
+      "_id": "62f3c0e3f1a3b15a46d7b0ea",
+      "fullname": {
+        "firstname": "Jane",
+        "lastname": "Smith"
+      },
+      "email": "jane.smith@example.com",
+      "vehicle": {
+        "color": "Red",
+        "plate": "ABC123",
+        "vehicleType": "Sedan",
+        "capacity": 4
+      }
+      // ...other fields
+    }
+  }
+  ```
+
+- **401 Unauthorized**
+  ```json
+  {
+    "message": "Unauthorized access"
+  }
+  ```
+
+- **404 Not Found**
+  ```json
+  {
+    "message": "Captain not found"
+  }
+  ```
+
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Internal server error"
+  }
+  ```
+
+---
+
+### 4. Logout Captain
+
+**GET** `/captains/logout`
+
+Logs out the authenticated captain by blacklisting the JWT token and clearing the cookie.
+
+**Authentication required:** Send JWT token in the `Authorization` header as `Bearer <token>` or as a cookie named `token`.
+
+#### Example Request
+
+```bash
+curl -X GET http://localhost:4000/captains/logout \
+  -H "Authorization: Bearer <your_jwt_token>"
+```
+
+#### Responses
+
+- **200 OK**
+  ```json
+  {
+    "message": "Logout successful"
+  }
+  ```
+
+- **401 Unauthorized**
+  ```json
+  {
+    "message": "Unauthorized access"
+  }
+  ```
+
+- **500 Internal Server Error**
+  ```json
+  {
+    "message": "Internal server error"
+  }
+  ```
+
+---
+
+## Notes
+
+- All endpoints expect and return JSON.
+- JWT tokens are required for authenticated routes (`/captains/profile`, `/captains/logout`).
+- Validation errors are returned as an array in the `errors` field.
+- Passwords are securely hashed using bcrypt.
+- Blacklisted tokens cannot be used for authentication.
