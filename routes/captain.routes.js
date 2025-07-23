@@ -28,5 +28,6 @@ router.post('/login',
 router.get('/profile', authMiddleware.authCaptain, captainController.getCaptainProfile);
 
 router.get('/logout', authMiddleware.authCaptain, captainController.logoutCaptain);
+router.get('/verify-token', authMiddleware.authCaptain, captainController.verifyToken);
 
 module.exports = router;

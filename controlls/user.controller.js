@@ -75,3 +75,24 @@ module.exports.logoutUser = async (req, res) => {
     res.status(200).json({ message: 'Logged out successfully' });
     
 }
+module.exports.verifyToken = async (req, res) => {
+    try {
+        const token = req.cookies.token || req.headers.authorization?.split(' ')[1];
+        if (!token) {
+            return res.status(401).json({ message: 'No token provided' });
+        }
+
+        // Check if the token is blacklisted
+        const isBlacklisted = await BlacklistToken.findOne({ token });
+        if (isBlacklisted) {
+            return res.status(401).json({ message: 'Token is blacklisted' });
+        }
+
+        // Verify the token
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        res.status(200).json({ valid: true, userId: decoded.id });
+    } catch (error) {
+        console.error('Token verification error:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
