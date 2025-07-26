@@ -1,4 +1,6 @@
 const express =require('express');
+const mapsRoutes = require('./routes/map.routes');
+const rideRoutes = require('./routes/ride.routes');
 const captainRoutes = require('./routes/captain.routes');
 const app = express();
 const cors = require('cors');
@@ -15,5 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/users",userRoutes) 
 app.use('/captains', captainRoutes); 
+app.use('/maps', mapsRoutes);
+app.use('/rides', rideRoutes);
 
 module.exports = app;  
